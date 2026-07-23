@@ -7,9 +7,10 @@ image URLs for embedding, upload, and manage albums. A thin [Model Context
 Protocol](https://modelcontextprotocol.io) wrapper around Flickr's official API
 (OAuth 1.0a signed, read + write).
 
-Status: 🟢 read path verified (6 read tools green against a real ~1500-photo
-account). Write tools (upload / albums) are code-complete but not yet
-live-tested — see [Notes](#notes).
+Status: 🟢 all 10 tools live-verified (6 read + 4 write) against a real
+~1500-photo account. The first live upload test surfaced two real bugs in
+`upload_photo` — an OAuth multipart-signing failure (401) and a non-ASCII
+title signing crash — both now fixed (HMAC-SHA1 signed by hand, UTF-8 safe).
 
 ## Tools
 

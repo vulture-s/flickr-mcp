@@ -4,7 +4,7 @@
 
 讓 Claude 直接操作你的 Flickr——瀏覽 photostream、抓可嵌入的直連圖片網址、上傳、管理相簿。用 [Model Context Protocol](https://modelcontextprotocol.io) 包 Flickr 官方 API（OAuth 1.0a 簽章，讀+寫）。
 
-狀態：🟢 讀取實測通過（6 個讀取工具在真實約 1500 張的帳號上全綠）。寫入（上傳／相簿）code 完成、尚未實跑——見[注意](#注意)。
+狀態：🟢 **10 工具全 live-verified**（6 讀 + 4 寫，真實約 1500 張帳號實測）。首次上傳實測抓到 `upload_photo` 兩個真 bug——OAuth multipart 簽章失敗（401）＋中文標題簽章 ascii crash——皆已修（手簽 HMAC-SHA1、UTF-8 safe）。
 
 ## 能做什麼（工具清單）
 
