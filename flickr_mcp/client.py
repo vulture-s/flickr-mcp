@@ -7,10 +7,17 @@ requests-oauthlib's OAuth1Session so every call carries the user's access token.
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import os
+import time
+import uuid
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
+import requests
 from requests_oauthlib import OAuth1Session
 
 REST_URL = "https://api.flickr.com/services/rest/"
@@ -106,6 +113,30 @@ class FlickrClient:
             )
         return data
 
+    def _sign_upload(self, params: Dict[str, Any]) -> Dict[str, str]:
+        """OAuth-1.0a-sign the upload params (HMAC-SHA1, UTF-8 safe) and return them
+        plus the oauth_* fields, ready to POST as multipart form fields alongside the
+        photo. requests-oauthlib does not sign multipart bodies (the file part makes it
+        drop the params), which returns 401 — so the signature is built by hand here.
+        """
+        oauth = {
+            "oauth_consumer_key": self.api_key,
+            "oauth_token": self.oauth_token,
+            "oauth_signature_method": "HMAC-SHA1",
+            "oauth_timestamp": str(int(time.time())),
+            "oauth_nonce": uuid.uuid4().hex,
+            "oauth_version": "1.0",
+        }
+        enc = lambda s: quote(str(s), safe="~")
+        merged = {**params, **oauth}
+        norm = "&".join(f"{enc(k)}={enc(merged[k])}" for k in sorted(merged))
+        base = "&".join(["POST", enc(UPLOAD_URL), enc(norm)])
+        key = f"{enc(self.api_secret)}&{enc(self.oauth_token_secret)}"
+        oauth["oauth_signature"] = base64.b64encode(
+            hmac.new(key.encode(), base.encode(), hashlib.sha1).digest()
+        ).decode()
+        return {**{k: str(v) for k, v in params.items()}, **oauth}
+
     def upload(
         self,
         photo_path: str,
@@ -130,9 +161,9 @@ class FlickrClient:
         if tags is not None:
             data["tags"] = tags
 
-        session = self._session()
+        signed = self._sign_upload(data)
         with open(photo_path, "rb") as fh:
-            resp = session.post(UPLOAD_URL, data=data, files={"photo": fh})
+            resp = requests.post(UPLOAD_URL, data=signed, files={"photo": fh})
         resp.raise_for_status()
 
         root = ET.fromstring(resp.text)
