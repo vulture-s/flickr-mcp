@@ -286,6 +286,28 @@ def set_photo_meta(
     return {"photo_id": photo_id, "title": title, "updated": True}
 
 
+@mcp.tool()
+def delete_photo(photo_id: str) -> Dict[str, Any]:
+    """Permanently delete a photo from Flickr. IRREVERSIBLE. Needs the token to
+    carry 'delete' permission — re-run authorize.py if you only granted 'write'."""
+    try:
+        _client().call("flickr.photos.delete", http="POST", photo_id=photo_id)
+    except FlickrError as exc:
+        return {"error": str(exc)}
+    return {"photo_id": photo_id, "deleted": True}
+
+
+@mcp.tool()
+def delete_album(album_id: str) -> Dict[str, Any]:
+    """Delete an album (photoset). Removes only the album — the photos it held are
+    NOT deleted, they stay in your photostream. Needs 'delete' permission."""
+    try:
+        _client().call("flickr.photosets.delete", http="POST", photoset_id=album_id)
+    except FlickrError as exc:
+        return {"error": str(exc)}
+    return {"album_id": album_id, "deleted": True}
+
+
 def main() -> None:
     """Entry point: run the MCP server over stdio."""
     mcp.run()

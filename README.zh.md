@@ -21,6 +21,10 @@
 - `create_album` — 建相簿（Flickr 規定要指定一張現有照片當封面）
 - `add_photo_to_album` — 把照片加進相簿
 - `set_photo_meta` — 改標題/描述
+- `delete_photo` — 永久刪照片（**不可逆**）
+- `delete_album` — 刪相簿（只刪 set，照片留在 photostream）
+
+> ⚠️ `delete_photo`／`delete_album` 需 `delete` 權限。若你之前用 `write` 授權，**重跑 `python authorize.py`** 換新 token 才能用（authorize 已升為 delete scope）。
 
 ## 安裝
 

@@ -12,7 +12,7 @@ token that the MCP server uses. Steps:
           code it shows, paste it back here.
     4. Export the two tokens it prints (FLICKR_OAUTH_TOKEN / _SECRET).
 
-Requests 'write' perms (covers read + upload + album management). Nothing is
+Requests 'delete' perms (covers read + upload + album management + delete). Nothing is
 written to disk automatically; you paste the tokens into your MCP config.
 """
 
@@ -43,8 +43,8 @@ def main() -> int:
     req_key = fetch.get("oauth_token")
     req_secret = fetch.get("oauth_token_secret")
 
-    # Step 2: user authorizes (write perms cover read + upload + album ops)
-    auth_url = oauth.authorization_url(AUTHORIZE_URL, perms="write")
+    # Step 2: user authorizes (delete perms cover read + upload + album ops + delete)
+    auth_url = oauth.authorization_url(AUTHORIZE_URL, perms="delete")
     print("\n1) Open this URL in your browser and approve access:\n")
     print("   " + auth_url + "\n")
     verifier = input("2) Paste the verification code shown by Flickr: ").strip()

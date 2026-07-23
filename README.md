@@ -27,6 +27,10 @@ title signing crash — both now fixed (HMAC-SHA1 signed by hand, UTF-8 safe).
 - `create_album` — create an album (Flickr requires an existing photo as the cover)
 - `add_photo_to_album` — add a photo to an album
 - `set_photo_meta` — update a photo's title / description
+- `delete_photo` — permanently delete a photo (**irreversible**)
+- `delete_album` — delete an album (removes only the set; the photos stay in your photostream)
+
+> ⚠️ `delete_photo` / `delete_album` need `delete` permission. If you authorized with `write`, **re-run `python authorize.py`** for a fresh token (it now requests the `delete` scope).
 
 ## Install
 
