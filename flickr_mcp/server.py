@@ -264,22 +264,31 @@ def add_photo_to_album(album_id: str, photo_id: str) -> Dict[str, Any]:
 def set_photo_meta(
     photo_id: str, title: Optional[str] = None, description: Optional[str] = None
 ) -> Dict[str, Any]:
-    """Update a photo's title and/or description. Flickr's setMeta requires the
-    title, so an existing title is fetched when only description is supplied."""
+    """Update a photo's title and/or description. A field left as None keeps its
+    current value on Flickr; pass description="" to clear the description."""
+    if title is None and description is None:
+        return {"error": "Nothing to update: pass title and/or description."}
     client = _client()
-    if title is None:
+    # setMeta writes both fields, so any field not supplied is read back first
+    # and re-sent unchanged. Sending description="" for an omitted description
+    # permanently wiped it (Flickr keeps no history).
+    if title is None or description is None:
         try:
             info = client.call("flickr.photos.getInfo", photo_id=photo_id)
-            title = info.get("photo", {}).get("title", {}).get("_content", "")
         except FlickrError as exc:
             return {"error": str(exc)}
+        photo = info.get("photo", {})
+        if title is None:
+            title = photo.get("title", {}).get("_content", "")
+        if description is None:
+            description = photo.get("description", {}).get("_content", "")
     try:
         client.call(
             "flickr.photos.setMeta",
             http="POST",
             photo_id=photo_id,
             title=title,
-            description=description or "",
+            description=description,
         )
     except FlickrError as exc:
         return {"error": str(exc)}
