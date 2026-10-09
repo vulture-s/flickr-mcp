@@ -26,3 +26,7 @@ jobs:
         run: python -m py_compile flickr_mcp/*.py authorize.py
       - name: Import check (registers the MCP tools)
         run: python -c "import flickr_mcp.server as s; print('tools ok:', s.mcp.name)"
+      - name: Unit tests (mocked client, no network)
+        run: |
+          pip install pytest
+          python -m pytest -q tests

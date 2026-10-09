@@ -23,6 +23,10 @@ from requests_oauthlib import OAuth1Session
 REST_URL = "https://api.flickr.com/services/rest/"
 UPLOAD_URL = "https://up.flickr.com/services/upload/"
 
+# (connect, read) seconds for REST calls. requests has no default timeout, so a
+# half-open connection used to hang the MCP tool forever with no error.
+REST_TIMEOUT = (10, 60)
+
 
 class FlickrError(RuntimeError):
     """Raised when Flickr returns stat != ok, or credentials are missing."""
@@ -102,9 +106,9 @@ class FlickrClient:
 
         session = self._session()
         if http.upper() == "POST":
-            resp = session.post(REST_URL, data=query)
+            resp = session.post(REST_URL, data=query, timeout=REST_TIMEOUT)
         else:
-            resp = session.get(REST_URL, params=query)
+            resp = session.get(REST_URL, params=query, timeout=REST_TIMEOUT)
         resp.raise_for_status()
         data = resp.json()
         if data.get("stat") != "ok":
@@ -163,7 +167,7 @@ class FlickrClient:
 
         signed = self._sign_upload(data)
         with open(photo_path, "rb") as fh:
-            resp = requests.post(UPLOAD_URL, data=signed, files={"photo": fh})
+            resp = requests.post(UPLOAD_URL, data=signed, files={"photo": fh}, timeout=120)
         resp.raise_for_status()
 
         root = ET.fromstring(resp.text)
