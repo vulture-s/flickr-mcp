@@ -167,7 +167,7 @@ class FlickrClient:
 
         signed = self._sign_upload(data)
         with open(photo_path, "rb") as fh:
-            resp = requests.post(UPLOAD_URL, data=signed, files={"photo": fh})
+            resp = requests.post(UPLOAD_URL, data=signed, files={"photo": fh}, timeout=120)
         resp.raise_for_status()
 
         root = ET.fromstring(resp.text)
